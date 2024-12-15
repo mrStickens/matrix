@@ -1,304 +1,601 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Матрица Судьбы</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chart.js/3.7.0/chart.min.js"></script>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Матрица Судьбы</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+<style>
         :root {
-            --primary-color: #2481cc;
-            --background-color: #ffffff;
-            --text-color: #333333;
-            --secondary-color: #6c757d;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #2481cc;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--background-color);
-            color: var(--text-color);
-            line-height: 1.6;
+            background-color: var(--tg-theme-bg-color);
+            color: var(--tg-theme-text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+            font-size: 16px;
+            line-height: 1.5;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 800px;
             margin: 0 auto;
-            padding: 20px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
+            margin-bottom: 24px;
         }
 
-        .input-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 30px;
+        .input-group {
+            margin-bottom: 20px;
+            text-align: center;
         }
 
-        #birthdate {
-            width: 300px;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 2px solid var(--primary-color);
-            border-radius: 5px;
+        input[type="date"] {
+            width: 100%;
+            max-width: 300px;
+            padding: 12px;
+            border: 1px solid var(--tg-theme-hint-color);
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 16px;
         }
 
-        #calculate-btn {
-            background-color: var(--primary-color);
-            color: white;
+        button {
+            background-color: var(--tg-theme-button-color);
+            color: var(--tg-theme-button-text-color);
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            transition: opacity 0.2s;
         }
 
-        #calculate-btn:hover {
-            background-color: #1e6fa5;
+        button:hover {
+            opacity: 0.9;
         }
 
-        .results-section {
-            background-color: #f4f4f4;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
+        .matrix-container {
+            margin: 24px 0;
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(36, 129, 204, 0.1);
         }
 
         .matrix-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 2px;
+            background-color: var(--tg-theme-hint-color);
+            padding: 2px;
+            border-radius: 8px;
+            margin: 20px auto;
+            max-width: 300px;
         }
 
         .matrix-cell {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--tg-theme-bg-color);
+            aspect-ratio: 1;
             display: flex;
-            justify-content: center;
             align-items: center;
-            padding: 15px;
-            border-radius: 5px;
+            justify-content: center;
+            font-size: 24px;
             font-weight: bold;
         }
 
-        .energy-chart {
-            max-height: 400px;
-            margin-bottom: 20px;
+        .interpretation {
+            margin-top: 24px;
+            padding: 16px;
+            border-radius: 12px;
+            background: rgba(36, 129, 204, 0.05);
         }
+
+        .chart-container {
+            position: relative;
+            margin: 24px auto;
+            max-width: 600px;
+            height: 600px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .energy-description {
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(36, 129, 204, 0.05);
+        }
+
+        .energy-value {
+            font-weight: bold;
+            color: var(--tg-theme-link-color);
+        }
+    
+
+        /* Previous styles remain the same */
+        :root {
+            --tg-theme-bg-color: #ffffff;
+            --tg-theme-text-color: #000000;
+            --tg-theme-hint-color: #999999;
+            --tg-theme-link-color: #2481cc;
+            --tg-theme-button-color: #2481cc;
+            --tg-theme-button-text-color: #ffffff;
+        }
+
+        /* Adding new styles for interpretations */
+        .interpretation-block {
+            background: rgba(36, 129, 204, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+
+        .interpretation-title {
+            color: var(--tg-theme-link-color);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .matrix-row-interpretation {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin: 12px 0;
+        }
+
+        .character-trait {
+            background: rgba(36, 129, 204, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin: 4px 0;
+        }
+
+        .energy-combo {
+            border-left: 3px solid var(--tg-theme-link-color);
+            padding-left: 12px;
+            margin: 8px 0;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 8px;
+            margin: 16px 0;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: rgba(36, 129, 204, 0.1);
+            border-radius: 6px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: var(--tg-theme-link-color);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Previous styles remain unchanged */
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Матрица Судьбы</h1>
-            <p>Узнайте свой энергетический потенциал</p>
-        </div>
-
-        <div class="input-section">
-            <input type="date" id="birthdate" required>
-            <button id="calculate-btn">Рассчитать матрицу</button>
-        </div>
-
-        <div id="results" class="results-section" style="display:none;">
-            <div id="matrix-container">
-                <h2>Ваша матрица</h2>
-                <div class="matrix-grid" id="matrix-grid"></div>
-            </div>
-
-            <div id="energy-chart-container">
-                <h2>Энергетический профиль</h2>
-                <canvas id="energy-chart" class="energy-chart"></canvas>
-            </div>
-
-            <div id="energy-interpretation">
-                <h2>Интерпретация энергий</h2>
-                <div id="energy-details"></div>
-            </div>
-
-            <div id="recommendations">
-                <h2>Персональные рекомендации</h2>
-                <div id="recommendation-list"></div>
-            </div>
-        </div>
-    </div>
+<div class="container">
+<div class="header">
+<h1>Матрица Судьбы</h1>
+<p>Введите дату рождения для расчета вашей персональной матрицы</p>
+</div>
+<div class="input-group">
+<input id="birthdate" required="" type="date"/>
+<button id="calculate">Рассчитать матрицу</button>
+</div>
+<div class="hidden" id="results">
+<div class="matrix-container">
+<h2>Ваша матрица</h2>
+<div class="matrix-grid" id="matrixGrid"></div>
+</div>
+<div class="chart-container">
+<canvas id="energyChart"></canvas>
+</div>
+<div class="interpretation" id="interpretation"></div>
+</div>
+</div>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    class DestinyMatrix {
-        constructor() {
-            this.initializeElements();
-            this.bindEvents();
-        }
+        let tg = window.Telegram.WebApp;
+        tg.expand();
 
-        initializeElements() {
-            this.birthdateInput = document.getElementById('birthdate');
-            this.calculateButton = document.getElementById('calculate-btn');
-            this.resultsDiv = document.getElementById('results');
-            this.matrixGrid = document.getElementById('matrix-grid');
-            this.energyDetailsDiv = document.getElementById('energy-details');
-            this.recommendationListDiv = document.getElementById('recommendation-list');
-            this.energyChart = document.getElementById('energy-chart');
-
-            if (!this.calculateButton) {
-                console.error("Кнопка расчёта не найдена в DOM.");
+        class DestinyMatrix {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.setupTelegramTheme();
             }
-        }
 
-        bindEvents() {
-            if (this.calculateButton) {
+            initializeElements() {
+                this.birthdateInput = document.getElementById('birthdate');
+                this.calculateButton = document.getElementById('calculate');
+                this.resultsDiv = document.getElementById('results');
+                this.matrixGrid = document.getElementById('matrixGrid');
+                this.interpretation = document.getElementById('interpretation');
+                this.chartCanvas = document.getElementById('energyChart');
+            }
+
+            bindEvents() {
                 this.calculateButton.addEventListener('click', () => this.calculateMatrix());
             }
-        }
 
-        calculateMatrix() {
-            const birthdate = this.birthdateInput.value;
-            if (!birthdate) {
-                alert('Пожалуйста, введите дату рождения');
-                return;
+            setupTelegramTheme() {
+                document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
+                document.documentElement.style.setProperty('--tg-theme-text-color', tg.themeParams.text_color);
+                document.documentElement.style.setProperty('--tg-theme-hint-color', tg.themeParams.hint_color);
+                document.documentElement.style.setProperty('--tg-theme-link-color', tg.themeParams.link_color);
+                document.documentElement.style.setProperty('--tg-theme-button-color', tg.themeParams.button_color);
+                document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.themeParams.button_text_color);
             }
 
-            const [year, month, day] = birthdate.split('-').map(Number);
-            const matrix = this.generateMatrix(day, month, year);
-            const energies = this.calculateEnergies(day, month, year);
-
-            this.displayMatrix(matrix);
-            this.displayEnergyInterpretation(energies);
-            this.createEnergyChart(energies);
-            this.generateRecommendations(matrix, energies);
-
-            this.resultsDiv.style.display = 'block';
-        }
-
-        generateMatrix(day, month, year) {
-            const digits = `${day}${month}${year}`.split('').map(Number);
-            const matrix = [
-                [0, 0, 0],
-                [0, 0, 0],
-                [0, 0, 0]
-            ];
-
-            digits.forEach(digit => {
-                if (digit > 0) {
-                    const row = Math.floor((digit - 1) / 3);
-                    const col = (digit - 1) % 3;
-                    matrix[row][col]++;
-                }
-            });
-
-            return matrix;
-        }
-
-        calculateEnergies(day, month, year) {
-            const dateSum = day + month + year;
-            return [
-                this.calculateEnergy(dateSum),
-                this.calculateEnergy(day * month),
-                this.calculateEnergy(year)
-            ];
-        }
-
-        calculateEnergy(value) {
-            return Math.min(Math.max(value % 22, 1), 22);
-        }
-
-        displayMatrix(matrix) {
-            this.matrixGrid.innerHTML = matrix.flat().map(value => 
-                `<div class="matrix-cell">${value}</div>`
-            ).join('');
-        }
-
-        displayEnergyInterpretation(energies) {
-            const interpretations = energies.map((energyValue, index) => {
-                const energyKey = `E${index + 1}`;
-                const level = this.getEnergyLevel(energyValue);
-                const energyData = ENERGY_DESCRIPTIONS[energyKey][level];
-
-                return `
-                    <div class="energy-interpretation">
-                        <h3>${ENERGY_DESCRIPTIONS[energyKey].name}</h3>
-                        <p><strong>Уровень:</strong> ${level}</p>
-                        <p><strong>Описание:</strong> ${energyData.description}</p>
-                        <p><strong>Рекомендации:</strong></p>
-                        <ul>
-                            ${energyData.recommendations.map(rec => `<li>${rec}</li>`).join('')}
-                        </ul>
-                    </div>
-                `;
-            });
-
-            this.energyDetailsDiv.innerHTML = interpretations.join('');
-        }
-
-        getEnergyLevel(value) {
-            if (value <= 7) return 'low';
-            if (value <= 14) return 'medium';
-            return 'high';
-        }
-
-        createEnergyChart(energies) {
-            if (!this.energyChart) {
-                console.error("Не удалось найти элемент canvas для графика.");
-                return;
+            toRange1_22(num) {
+                while (num > 22) num -= 22;
+                while (num < 1) num += 22;
+                return num;
             }
 
-            const ctx = this.energyChart.getContext('2d');
-            new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['Предназначение', 'Отношения', 'Творчество'],
-                    datasets: [{
-                        label: 'Энергетический профиль',
-                        data: energies,
-                        backgroundColor: 'rgba(36, 129, 204, 0.2)',
-                        borderColor: 'rgba(36, 129, 204, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 22
+            sumDigits(n) {
+                return String(n).split('').reduce((sum, digit) => sum + parseInt(digit), 0);
+            }
+
+            calculateEnergies(day, month, year) {
+                const dateStr = `${day.toString().padStart(2, '0')}${month.toString().padStart(2, '0')}${year}`;
+                const allDigits = dateStr.split('').map(Number);
+                
+                const E1 = this.toRange1_22(allDigits.reduce((sum, digit) => sum + digit, 0));
+                const dateSum = day + month + year;
+                const E2 = this.toRange1_22(this.sumDigits(dateSum));
+                const E3 = this.toRange1_22(E1 + E2);
+                const E4 = this.toRange1_22(E1 + day);
+                const E5 = this.toRange1_22(E2 + month);
+                const E6 = this.toRange1_22(E3 + this.sumDigits(year));
+                const E7 = this.toRange1_22(E4 + E5);
+                const E8 = this.toRange1_22(E6 + E7);
+
+                return [E1, E2, E3, E4, E5, E6, E7, E8];
+            }
+
+            createMatrix(dateStr) {
+                const digits = dateStr.split('').map(Number);
+                const S1 = digits.reduce((sum, digit) => sum + digit, 0);
+                const S2 = this.sumDigits(S1);
+                const day = parseInt(dateStr.slice(0, 2));
+                const D = S1 - 2 * day;
+                const S3 = this.sumDigits(Math.abs(D));
+
+                const finalDigits = [...digits, ...String(S1).split('').map(Number), S2, 
+                                   ...String(Math.abs(D)).split('').map(Number), S3];
+
+                const matrix = Array(3).fill().map(() => Array(3).fill(0));
+                finalDigits.forEach(digit => {
+                    if (digit > 0 && digit <= 9) {
+                        const row = Math.floor((digit - 1) / 3);
+                        const col = (digit - 1) % 3;
+                        matrix[row][col]++;
+                    }
+                });
+
+                return matrix;
+            }
+
+            getEnergyDescription(energy, value) {
+                const descriptions = {
+                    E1: 'Энергия предназначения и жизненного пути',
+                    E2: 'Энергия отношений и партнерства',
+                    E3: 'Энергия творчества и самовыражения',
+                    E4: 'Энергия здоровья и физической силы',
+                    E5: 'Энергия интеллекта и мудрости',
+                    E6: 'Энергия духовного развития',
+                    E7: 'Энергия материального благополучия',
+                    E8: 'Энергия кармического предназначения'
+                };
+
+                let strength = '';
+                if (value <= 7) strength = 'слабая';
+                else if (value <= 14) strength = 'средняя';
+                else strength = 'сильная';
+
+                return `${descriptions[energy]} (${strength}, значение: ${value})`;
+            }
+
+            createChart(energies) {
+                const ctx = this.chartCanvas.getContext('2d');
+                if (window.myChart) window.myChart.destroy();
+                
+                window.myChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'],
+                        datasets: [{
+                            label: 'Энергии',
+                            data: energies,
+                            backgroundColor: 'rgba(36, 129, 204, 0.2)',
+                            borderColor: 'rgba(36, 129, 204, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(36, 129, 204, 1)',
+                            pointRadius: 5
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 22,
+                                ticks: {
+                                    stepSize: 2
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         }
                     }
+                });
+            }
+
+            calculateMatrix() {
+                const birthdate = this.birthdateInput.value;
+                if (!birthdate) {
+                    alert('Пожалуйста, введите дату рождения');
+                    return;
                 }
+
+                const [year, month, day] = birthdate.split('-').map(Number);
+                const dateStr = `${day.toString().padStart(2, '0')}${month.toString().padStart(2, '0')}${year}`;
+                
+                const matrix = this.createMatrix(dateStr);
+                const energies = this.calculateEnergies(day, month, year);
+
+                this.displayResults(matrix, energies);
+                this.resultsDiv.classList.remove('hidden');
+            }
+
+            displayResults(matrix, energies) {
+                // Display matrix
+                this.matrixGrid.innerHTML = '';
+                matrix.forEach(row => {
+                    row.forEach(value => {
+                        const cell = document.createElement('div');
+                        cell.className = 'matrix-cell';
+                        cell.textContent = value;
+                        this.matrixGrid.appendChild(cell);
+                    });
+                });
+
+                // Create chart
+                this.createChart(energies);
+
+                // Display interpretation
+                let interpretationHTML = '<h2>Интерпретация энергий</h2>';
+                energies.forEach((value, index) => {
+                    interpretationHTML += `
+                        <div class="energy-description">
+                            <span class="energy-value">E${index + 1}:</span> 
+                            ${this.getEnergyDescription(`E${index + 1}`, value)}
+                        </div>`;
+                });
+
+                this.interpretation.innerHTML = interpretationHTML;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new DestinyMatrix();
+        });
+    </script>
+<script>
+        // Previous DestinyMatrix class definition remains largely the same
+        class DestinyMatrix {
+            // ... previous methods remain the same ...
+
+            getMatrixRowInterpretation(row, values) {
+                const rowMeanings = {
+                    0: {
+                        title: 'Характер и самовыражение',
+                        interpretations: {
+                            weak: 'Склонность к самоанализу, интровертность',
+                            medium: 'Сбалансированное самовыражение',
+                            strong: 'Яркая личность, сильный характер'
+                        }
+                    },
+                    1: {
+                        title: 'Энергия и здоровье',
+                        interpretations: {
+                            weak: 'Необходимость укрепления энергетики',
+                            medium: 'Стабильный энергетический потенциал',
+                            strong: 'Мощный энергетический заряд'
+                        }
+                    },
+                    2: {
+                        title: 'Интуиция и духовность',
+                        interpretations: {
+                            weak: 'Рациональное мышление преобладает',
+                            medium: 'Баланс логики и интуиции',
+                            strong: 'Развитая интуиция, духовная чуткость'
+                        }
+                    }
+                };
+
+                const sum = values.reduce((a, b) => a + b, 0);
+                let strength = sum <= 2 ? 'weak' : sum <= 4 ? 'medium' : 'strong';
+
+                return {
+                    title: rowMeanings[row].title,
+                    interpretation: rowMeanings[row].interpretations[strength],
+                    strength: strength,
+                    sum: sum
+                };
+            }
+
+            getEnergyCompatibility(energies) {
+                const pairs = [
+                    {
+                        energies: [0, 3],
+                        name: 'Самореализация',
+                        interpretation: 'Показывает способность воплощать идеи'
+                    },
+                    {
+                        energies: [1, 4],
+                        name: 'Социальная адаптация',
+                        interpretation: 'Отражает умение выстраивать отношения'
+                    },
+                    {
+                        energies: [2, 5],
+                        name: 'Духовный рост',
+                        interpretation: 'Определяет потенциал развития'
+                    }
+                ];
+
+                return pairs.map(pair => {
+                    const value = Math.abs(energies[pair.energies[0]] - energies[pair.energies[1]]);
+                    return {
+                        ...pair,
+                        compatibility: value <= 4 ? 'высокая' : value <= 8 ? 'средняя' : 'требует внимания'
+                    };
+                });
+            }
+
+            getRecommendations(matrix, energies) {
+                const recommendations = [];
+                
+                // Анализ характера
+                const characterSum = matrix[0].reduce((a, b) => a + b, 0);
+                if (characterSum < 3) {
+                    recommendations.push('Развивайте уверенность в себе, больше проявляйте инициативу');
+                }
+
+                // Анализ энергии
+                const energySum = matrix[1].reduce((a, b) => a + b, 0);
+                if (energySum < 3) {
+                    recommendations.push('Укрепляйте энергетику через физическую активность и правильный режим дня');
+                }
+
+                // Анализ духовности
+                const spiritualSum = matrix[2].reduce((a, b) => a + b, 0);
+                if (spiritualSum < 3) {
+                    recommendations.push('Уделите внимание духовному развитию и интуиции');
+                }
+
+                return recommendations;
+            }
+
+            displayResults(matrix, energies) {
+                // Previous matrix and chart display code remains the same
+                this.matrixGrid.innerHTML = '';
+                matrix.forEach(row => {
+                    row.forEach(value => {
+                        const cell = document.createElement('div');
+                        cell.className = 'matrix-cell';
+                        cell.textContent = value;
+                        this.matrixGrid.appendChild(cell);
+                    });
+                });
+
+                this.createChart(energies);
+
+                // New interpretation display code
+                const basicTab = document.getElementById('basicTab');
+                const detailedTab = document.getElementById('detailedTab');
+                const energyTab = document.getElementById('energyTab');
+                const recommendationsTab = document.getElementById('recommendationsTab');
+
+                // Basic Analysis
+                let basicHTML = '<div class="interpretation-block">';
+                for (let i = 0; i < 3; i++) {
+                    const rowInterpretation = this.getMatrixRowInterpretation(i, matrix[i]);
+                    basicHTML += `
+                        <div class="matrix-row-interpretation">
+                            <div class="interpretation-title">${rowInterpretation.title}</div>
+                            <div class="character-trait">${rowInterpretation.interpretation}</div>
+                        </div>`;
+                }
+                basicHTML += '</div>';
+                basicTab.innerHTML = basicHTML;
+
+                // Detailed Analysis
+                let detailedHTML = '<div class="interpretation-block">';
+                detailedHTML += '<div class="interpretation-title">Энергетические связи</div>';
+                const compatibility = this.getEnergyCompatibility(energies);
+                compatibility.forEach(comp => {
+                    detailedHTML += `
+                        <div class="energy-combo">
+                            <strong>${comp.name}</strong>: ${comp.interpretation}
+                            <br>Совместимость: ${comp.compatibility}
+                        </div>`;
+                });
+                detailedHTML += '</div>';
+                detailedTab.innerHTML = detailedHTML;
+
+                // Energy Analysis
+                let energyHTML = '<div class="interpretation-block">';
+                energies.forEach((value, index) => {
+                    energyHTML += `
+                        <div class="energy-description">
+                            <span class="energy-value">E${index + 1}:</span> 
+                            ${this.getEnergyDescription(`E${index + 1}`, value)}
+                        </div>`;
+                });
+                energyHTML += '</div>';
+                energyTab.innerHTML = energyHTML;
+
+                // Recommendations
+                let recommendationsHTML = '<div class="interpretation-block">';
+                const recommendations = this.getRecommendations(matrix, energies);
+                recommendationsHTML += '<div class="interpretation-title">Персональные рекомендации</div>';
+                recommendations.forEach(rec => {
+                    recommendationsHTML += `<div class="character-trait">${rec}</div>`;
+                });
+                recommendationsHTML += '</div>';
+                recommendationsTab.innerHTML = recommendationsHTML;
+            }
+        }
+
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const matrix = new DestinyMatrix();
+
+            // Tab switching
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    const tabContents = document.querySelectorAll('.tab-content');
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(`${tab.dataset.tab}Tab`).classList.add('active');
+                });
             });
-        }
-
-        generateRecommendations(matrix, energies) {
-            const recommendations = [];
-            const willPowerSum = matrix[0].reduce((a, b) => a + b, 0);
-            const willPowerLevel = willPowerSum <= 1 ? 'low' : (willPowerSum <= 3 ? 'medium' : 'high');
-            recommendations.push(...MATRIX_INTERPRETATION.willPower[willPowerLevel].recommendations);
-
-            const contextTips = [
-                { condition: matrix[0].reduce((a, b) => a + b, 0) <= 1, message: "💪 Развивайте силу воли через ежедневные малые победы" },
-                { condition: energies[2] <= 7, message: "🎨 Раскройте свой творческий потенциал через новые хобби" },
-                { condition: energies[1] <= 7, message: "🤝 Улучшайте навыки коммуникации и социального взаимодействия" }
-            ];
-
-            recommendations.push(...contextTips.filter(tip => tip.condition).map(tip => tip.message));
-
-            this.recommendationListDiv.innerHTML = recommendations.map(rec => `<div class="recommendation-item">${rec}</div>`).join('');
-        }
-    }
-
-    new DestinyMatrix();
-});
-</script>
-</body>
+        });
+    </script></body>
 </html>
