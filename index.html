@@ -1,281 +1,211 @@
 <!DOCTYPE html>
 <html lang="ru">
-<!-- Предыдущий HEAD остается без изменений -->
 <head>
-    <!-- Предыдущий код head остается тем же -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Матрица Судьбы - Совместимость</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <style>
-        /* Предыдущие стили остаются */
-        
-        .interpretation-block {
-            margin: 15px 0;
-            padding: 15px;
-            border-radius: 10px;
-            background: rgba(36, 129, 204, 0.05);
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 16px;
+            background-color: #f4f4f9;
         }
-
-        .interpretation-title {
-            font-weight: bold;
-            color: var(--tg-theme-link-color);
-            margin-bottom: 10px;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
         }
-
-        .interpretation-content {
-            margin: 10px 0;
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
         }
-
-        .energy-combination {
-            margin: 10px 0;
-            padding: 10px;
-            border-left: 3px solid var(--tg-theme-link-color);
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
-
-        .key-number {
-            font-weight: bold;
-            color: var(--tg-theme-button-color);
+        input[type="date"] {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            max-width: 300px;
         }
-
-        .matrix-diagonal {
-            margin: 10px 0;
-            padding: 10px;
-            background: rgba(36, 129, 204, 0.08);
+        button {
+            background-color: #2481cc;
+            color: white;
+            border: none;
+            padding: 12px 16px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button:hover {
+            background-color: #0056a3;
+        }
+        .results {
+            margin-top: 24px;
+        }
+        .chart-container {
+            margin: 16px 0;
+            max-width: 600px;
+            margin: auto;
+        }
+        .compatibility-result {
+            font-size: 18px;
+            margin-top: 16px;
+        }
+        .interpretation {
+            margin-top: 24px;
+            padding: 16px;
             border-radius: 8px;
+            background: rgba(36, 129, 204, 0.1);
         }
     </style>
 </head>
 <body>
-    <!-- Предыдущий код body до script остается тем же -->
+    <div class="container">
+        <div class="header">
+            <h1>Матрица Судьбы</h1>
+            <p>Расчет совместимости между двумя людьми</p>
+        </div>
+
+        <div class="input-group">
+            <label for="birthdate1">Дата рождения первого человека:</label>
+            <input type="date" id="birthdate1">
+
+            <label for="birthdate2">Дата рождения второго человека:</label>
+            <input type="date" id="birthdate2">
+
+            <button id="calculateCompatibility">Рассчитать совместимость</button>
+        </div>
+
+        <div class="results" id="results" style="display:none;">
+            <h2>Результаты совместимости</h2>
+            <div class="chart-container">
+                <canvas id="compatibilityChart"></canvas>
+            </div>
+            <p class="compatibility-result" id="compatibilityResult"></p>
+            <div class="interpretation" id="interpretation"></div>
+        </div>
+    </div>
 
     <script>
-        // Предыдущий код JavaScript остается, добавляем новые методы в класс DestinyMatrix
+        document.getElementById('calculateCompatibility').addEventListener('click', () => {
+            const birthdate1 = document.getElementById('birthdate1').value;
+            const birthdate2 = document.getElementById('birthdate2').value;
 
-        class DestinyMatrix {
-            // Предыдущие методы остаются...
-
-            getMatrixInterpretation(matrix) {
-                const interpretations = [];
-                
-                // Характер (первая строка)
-                const characterSum = matrix[0].reduce((a, b) => a + b, 0);
-                interpretations.push({
-                    title: "Характер и личность",
-                    content: this.getCharacterInterpretation(characterSum, matrix[0])
-                });
-
-                // Энергия и здоровье (вторая строка)
-                const energySum = matrix[1].reduce((a, b) => a + b, 0);
-                interpretations.push({
-                    title: "Энергетика и здоровье",
-                    content: this.getEnergyInterpretation(energySum, matrix[1])
-                });
-
-                // Интерес и таланты (третья строка)
-                const talentSum = matrix[2].reduce((a, b) => a + b, 0);
-                interpretations.push({
-                    title: "Таланты и самореализация",
-                    content: this.getTalentInterpretation(talentSum, matrix[2])
-                });
-
-                return interpretations;
+            if (!birthdate1 || !birthdate2) {
+                alert('Пожалуйста, введите обе даты рождения');
+                return;
             }
 
-            getCharacterInterpretation(sum, numbers) {
-                const interpretations = {
-                    low: "Сдержанный характер. Склонность к самоанализу. Необходимо развивать уверенность и самовыражение.",
-                    medium: "Сбалансированный характер. Способность адаптироваться к ситуациям. Хорошие коммуникативные навыки.",
-                    high: "Сильный, яркий характер. Природные лидерские качества. Важно учиться слушать других."
-                };
+            const energies1 = calculateEnergies(birthdate1);
+            const energies2 = calculateEnergies(birthdate2);
 
-                let level = sum <= 3 ? "low" : sum <= 6 ? "medium" : "high";
-                let specific = "";
+            const compatibilityScore = calculateCompatibility(energies1, energies2);
+            displayCompatibilityResults(energies1, energies2, compatibilityScore);
+        });
 
-                if (numbers[0] > 2) specific += "Повышенное стремление к независимости. ";
-                if (numbers[1] > 2) specific += "Развитая интуиция в общении. ";
-                if (numbers[2] > 2) specific += "Склонность к творческому самовыражению. ";
+        function calculateEnergies(birthdate) {
+            const [year, month, day] = birthdate.split('-').map(Number);
+            const dateSum = day + month + year;
 
-                return interpretations[level] + " " + specific;
+            function toRange1_22(num) {
+                while (num > 22) num -= 22;
+                while (num < 1) num += 22;
+                return num;
             }
 
-            getEnergyInterpretation(sum, numbers) {
-                const interpretations = {
-                    low: "Необходимо уделять внимание накоплению и сохранению энергии. Важен регулярный отдых.",
-                    medium: "Стабильный энергетический потенциал. Способность восстанавливаться после нагрузок.",
-                    high: "Высокий энергетический потенциал. Склонность к активной деятельности."
-                };
-
-                let level = sum <= 3 ? "low" : sum <= 6 ? "medium" : "high";
-                let specific = "";
-
-                if (numbers[0] > 2) specific += "Физическая выносливость выше среднего. ";
-                if (numbers[1] > 2) specific += "Эмоциональная устойчивость. ";
-                if (numbers[2] > 2) specific += "Способность к быстрому восстановлению. ";
-
-                return interpretations[level] + " " + specific;
-            }
-
-            getTalentInterpretation(sum, numbers) {
-                const interpretations = {
-                    low: "Склонность к глубокой специализации. Важно развивать выбранные направления.",
-                    medium: "Разносторонние способности. Хороший баланс между разными сферами интересов.",
-                    high: "Многогранность талантов. Способность успешно развиваться в нескольких направлениях."
-                };
-
-                let level = sum <= 3 ? "low" : sum <= 6 ? "medium" : "high";
-                let specific = "";
-
-                if (numbers[0] > 2) specific += "Предрасположенность к точным наукам. ";
-                if (numbers[1] > 2) specific += "Творческий потенциал. ";
-                if (numbers[2] > 2) specific += "Организаторские способности. ";
-
-                return interpretations[level] + " " + specific;
-            }
-
-            getEnergyDescription(energy, value) {
-                const descriptions = {
-                    E1: {
-                        title: "Энергия жизненного пути",
-                        interpretations: {
-                            low: "Склонность к осторожности и тщательному планированию. Необходимо развивать инициативность.",
-                            medium: "Способность находить баланс между риском и осторожностью. Хорошие организаторские способности.",
-                            high: "Сильная жизненная позиция, природные лидерские качества. Важно учитывать мнение окружающих."
-                        }
-                    },
-                    E2: {
-                        title: "Энергия отношений",
-                        interpretations: {
-                            low: "Избирательность в общении, глубокие отношения с небольшим кругом людей.",
-                            medium: "Способность поддерживать гармоничные отношения, развитая эмпатия.",
-                            high: "Харизма, умение влиять на людей, развитые социальные навыки."
-                        }
-                    },
-                    E3: {
-                        title: "Энергия самореализации",
-                        interpretations: {
-                            low: "Фокус на конкретных целях, последовательное развитие.",
-                            medium: "Баланс между личными и профессиональными интересами.",
-                            high: "Многозадачность, способность вести несколько проектов одновременно."
-                        }
-                    },
-                    E4: {
-                        title: "Энергия здоровья",
-                        interpretations: {
-                            low: "Необходимость регулярной заботы о здоровье, внимание к режиму.",
-                            medium: "Хороший потенциал здоровья при правильном образе жизни.",
-                            high: "Крепкое здоровье, высокая жизненная сила."
-                        }
-                    },
-                    E5: {
-                        title: "Энергия интеллекта",
-                        interpretations: {
-                            low: "Склонность к специализации, глубокое изучение конкретных тем.",
-                            medium: "Сбалансированные интеллектуальные способности, практичность мышления.",
-                            high: "Быстрое усвоение информации, способность к комплексному анализу."
-                        }
-                    },
-                    E6: {
-                        title: "Энергия духовности",
-                        interpretations: {
-                            low: "Практичный подход к духовному развитию, важность конкретных практик.",
-                            medium: "Гармоничное сочетание духовного и материального.",
-                            high: "Глубокая духовная восприимчивость, развитая интуиция."
-                        }
-                    },
-                    E7: {
-                        title: "Энергия благосостояния",
-                        interpretations: {
-                            low: "Необходимость планирования финансов, внимание к деталям в работе.",
-                            medium: "Стабильный потенциал для создания благосостояния.",
-                            high: "Способность привлекать материальные ресурсы, деловая хватка."
-                        }
-                    },
-                    E8: {
-                        title: "Энергия кармы",
-                        interpretations: {
-                            low: "Фокус на проработке конкретных жизненных уроков.",
-                            medium: "Сбалансированное кармическое развитие.",
-                            high: "Активная кармическая работа, важные жизненные задачи."
-                        }
-                    }
-                };
-
-                const getLevel = (val) => {
-                    if (val <= 7) return "low";
-                    if (val <= 14) return "medium";
-                    return "high";
-                };
-
-                const level = getLevel(value);
-                return {
-                    title: descriptions[energy].title,
-                    interpretation: descriptions[energy].interpretations[level],
-                    value: value,
-                    level: level
-                };
-            }
-
-            displayResults(matrix, energies) {
-                // Предыдущий код отображения матрицы и графика...
-
-                // Добавляем расширенную интерпретацию
-                let interpretationHTML = '<h2>Подробный анализ матрицы</h2>';
-
-                // Добавляем интерпретацию матрицы
-                const matrixInterpretations = this.getMatrixInterpretation(matrix);
-                matrixInterpretations.forEach(interp => {
-                    interpretationHTML += `
-                        <div class="interpretation-block">
-                            <div class="interpretation-title">${interp.title}</div>
-                            <div class="interpretation-content">${interp.content}</div>
-                        </div>
-                    `;
-                });
-
-                // Добавляем интерпретацию энергий
-                interpretationHTML += '<h2>Анализ энергетических потоков</h2>';
-                energies.forEach((value, index) => {
-                    const energyInfo = this.getEnergyDescription(`E${index + 1}`, value);
-                    interpretationHTML += `
-                        <div class="interpretation-block">
-                            <div class="interpretation-title">${energyInfo.title} (E${index + 1})</div>
-                            <div class="energy-value">Значение: ${value} (${energyInfo.level})</div>
-                            <div class="interpretation-content">${energyInfo.interpretation}</div>
-                        </div>
-                    `;
-                });
-
-                // Добавляем анализ комбинаций энергий
-                interpretationHTML += `
-                    <div class="interpretation-block">
-                        <div class="interpretation-title">Ключевые комбинации энергий</div>
-                        <div class="energy-combination">
-                            <strong>E1 + E4:</strong> ${this.interpretEnergyCombination(energies[0], energies[3], "жизненная сила")}
-                        </div>
-                        <div class="energy-combination">
-                            <strong>E2 + E7:</strong> ${this.interpretEnergyCombination(energies[1], energies[6], "социальная реализация")}
-                        </div>
-                        <div class="energy-combination">
-                            <strong>E3 + E6:</strong> ${this.interpretEnergyCombination(energies[2], energies[5], "творческий потенциал")}
-                        </div>
-                    </div>
-                `;
-
-                this.interpretation.innerHTML = interpretationHTML;
-            }
-
-            interpretEnergyCombination(energy1, energy2, aspect) {
-                const sum = energy1 + energy2;
-                if (sum <= 15) {
-                    return `Необходимо уделить внимание развитию ${aspect}. Потенциал есть, требуется активная работа.`;
-                } else if (sum <= 30) {
-                    return `Хороший баланс в области ${aspect}. Стабильное развитие и реализация.`;
-                } else {
-                    return `Исключительный потенциал в сфере ${aspect}. Возможность достижения высоких результатов.`;
-                }
-            }
+            return [
+                toRange1_22(dateSum),
+                toRange1_22(day + month),
+                toRange1_22(month + year),
+                toRange1_22(day + year),
+                toRange1_22(day * 2 + month),
+                toRange1_22(month * 2 + year),
+                toRange1_22(day + month + year),
+                toRange1_22(dateSum * 2)
+            ];
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            new DestinyMatrix();
-        });
+        function calculateCompatibility(energies1, energies2) {
+            let score = 0;
+            for (let i = 0; i < energies1.length; i++) {
+                score += Math.abs(energies1[i] - energies2[i]);
+            }
+            return score;
+        }
+
+        function displayCompatibilityResults(energies1, energies2, score) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+
+            const compatibilityResult = document.getElementById('compatibilityResult');
+            compatibilityResult.textContent = `Уровень совместимости: ${score <= 20 ? 'Высокая' : score <= 40 ? 'Средняя' : 'Низкая'}`;
+
+            const ctx = document.getElementById('compatibilityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8'],
+                    datasets: [
+                        {
+                            label: 'Первый человек',
+                            data: energies1,
+                            backgroundColor: 'rgba(36, 129, 204, 0.2)',
+                            borderColor: 'rgba(36, 129, 204, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Второй человек',
+                            data: energies2,
+                            backgroundColor: 'rgba(204, 36, 129, 0.2)',
+                            borderColor: 'rgba(204, 36, 129, 1)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 22
+                        }
+                    }
+                }
+            });
+
+            const interpretationDiv = document.getElementById('interpretation');
+            interpretationDiv.innerHTML = '';
+
+            const descriptions = [
+                'Энергия предназначения и жизненного пути',
+                'Энергия отношений и партнерства',
+                'Энергия творчества и самовыражения',
+                'Энергия здоровья и физической силы',
+                'Энергия интеллекта и мудрости',
+                'Энергия духовного развития',
+                'Энергия материального благополучия',
+                'Энергия кармического предназначения'
+            ];
+
+            for (let i = 0; i < energies1.length; i++) {
+                const compatibility = Math.abs(energies1[i] - energies2[i]);
+                const level = compatibility <= 2 ? 'Высокая совместимость' : compatibility <= 5 ? 'Средняя совместимость' : 'Низкая совместимость';
+
+                interpretationDiv.innerHTML += `
+                    <div class="interpretation-block">
+                        <h3>${descriptions[i]} (E${i + 1})</h3>
+                        <p>Значение первого человека: ${energies1[i]}</p>
+                        <p>Значение второго человека: ${energies2[i]}</p>
+                        <p>Уровень совместимости: ${level}</p>
+                    </div>
+                `;
+            }
+        }
     </script>
 </body>
 </html>
