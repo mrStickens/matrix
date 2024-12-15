@@ -63,13 +63,27 @@
             border-radius: 8px;
             background: rgba(36, 129, 204, 0.1);
         }
+        .progress-table {
+            margin-top: 24px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        .progress-table th, .progress-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .progress-table th {
+            background-color: #2481cc;
+            color: white;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>Матрица Судьбы</h1>
-            <p>Расчет совместимости между двумя людьми</p>
+            <p>Расчет совместимости между двумя людьми и благоприятных периодов</p>
         </div>
 
         <div class="input-group">
@@ -89,6 +103,19 @@
             </div>
             <p class="compatibility-result" id="compatibilityResult"></p>
             <div class="interpretation" id="interpretation"></div>
+
+            <h2>Прогноз на текущий год и месяц</h2>
+            <table class="progress-table" id="progressTable">
+                <thead>
+                    <tr>
+                        <th>Месяц</th>
+                        <th>Энергия</th>
+                        <th>Рекомендации</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -107,6 +134,7 @@
 
             const compatibilityScore = calculateCompatibility(energies1, energies2);
             displayCompatibilityResults(energies1, energies2, compatibilityScore);
+            displayProgressTable(birthdate1);
         });
 
         function calculateEnergies(birthdate) {
@@ -177,34 +205,58 @@
                     }
                 }
             });
+        }
 
-            const interpretationDiv = document.getElementById('interpretation');
-            interpretationDiv.innerHTML = '';
+        function displayProgressTable(birthdate) {
+            const tableBody = document.getElementById('progressTable').querySelector('tbody');
+            tableBody.innerHTML = '';
 
-            const descriptions = [
-                'Энергия предназначения и жизненного пути',
-                'Энергия отношений и партнерства',
-                'Энергия творчества и самовыражения',
-                'Энергия здоровья и физической силы',
-                'Энергия интеллекта и мудрости',
-                'Энергия духовного развития',
-                'Энергия материального благополучия',
-                'Энергия кармического предназначения'
-            ];
+            const currentYear = new Date().getFullYear();
+            const personalYear = calculatePersonalYear(birthdate, currentYear);
 
-            for (let i = 0; i < energies1.length; i++) {
-                const compatibility = Math.abs(energies1[i] - energies2[i]);
-                const level = compatibility <= 2 ? 'Высокая совместимость' : compatibility <= 5 ? 'Средняя совместимость' : 'Низкая совместимость';
+            for (let month = 1; month <= 12; month++) {
+                const personalMonth = calculatePersonalMonth(personalYear, month);
+                const row = document.createElement('tr');
 
-                interpretationDiv.innerHTML += `
-                    <div class="interpretation-block">
-                        <h3>${descriptions[i]} (E${i + 1})</h3>
-                        <p>Значение первого человека: ${energies1[i]}</p>
-                        <p>Значение второго человека: ${energies2[i]}</p>
-                        <p>Уровень совместимости: ${level}</p>
-                    </div>
+                row.innerHTML = `
+                    <td>${month}</td>
+                    <td>${personalMonth}</td>
+                    <td>${getRecommendationsForMonth(personalMonth)}</td>
                 `;
+
+                tableBody.appendChild(row);
             }
+        }
+
+        function calculatePersonalYear(birthdate, year) {
+            const [birthYear, birthMonth, birthDay] = birthdate.split('-').map(Number);
+            const sum = birthDay + birthMonth + year;
+            return reduceToRange1_22(sum);
+        }
+
+        function calculatePersonalMonth(personalYear, month) {
+            return reduceToRange1_22(personalYear + month);
+        }
+
+        function reduceToRange1_22(number) {
+            while (number > 22) number -= 22;
+            while (number < 1) number += 22;
+            return number;
+        }
+
+        function getRecommendationsForMonth(energy) {
+            const recommendations = {
+                1: 'Начало новых проектов, активность.',
+                2: 'Сотрудничество и гармония.',
+                3: 'Творчество и самовыражение.',
+                4: 'Трудолюбие и стабильность.',
+                5: 'Перемены и свобода.',
+                6: 'Семья и забота о близких.',
+                7: 'Духовное развитие и самоанализ.',
+                8: 'Финансовый успех и амбиции.',
+                9: 'Завершение проектов и итоги.'
+            };
+            return recommendations[energy] || 'Период для личного роста.';
         }
     </script>
 </body>
